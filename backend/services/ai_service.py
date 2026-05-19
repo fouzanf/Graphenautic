@@ -1,23 +1,15 @@
-from google import genai
-from google.genai import types
-try:
-    from config import settings
-except ImportError:
-    try:
-        from ..config import settings
-    except (ImportError, ValueError):
-        import sys
-        import os
-        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from config import settings
-from models import GraphData
 import json
 import logging
+from google import genai
+from google.genai import types
+from config import settings
+from models import GraphData
 
 logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self):
+        # Initializes the official Gemini Python SDK client using your production API key
         self.client = genai.Client(api_key=settings.GOOGLE_API_KEY)
 
     def extract_graph_data(self, text: str) -> GraphData:
@@ -33,7 +25,7 @@ class AIService:
           "edges": [{{"source": "node_id_1", "target": "node_id_2", "relation": "how_they_are_connected"}}]
         }}
 
-        Only return the JSON. No markdown formatting.
+        Only return the JSON. No markdown formatting. Do not include ```json blocks.
         """
         try:
             response = self.client.models.generate_content(
@@ -41,10 +33,13 @@ class AIService:
                 contents=prompt
             )
             content = response.text.strip()
+            
+            # Defensive cleansing of markdown blocks if the LLM slips them in
             if content.startswith("```json"):
                 content = content[7:-3].strip()
             elif content.startswith("```"):
                 content = content[3:-3].strip()
+                
             data = json.loads(content)
             return GraphData(**data)
         except Exception as e:
@@ -63,10 +58,14 @@ class AIService:
 
         Synthesize a clear, professional, and cited answer.
         """
-        response = self.client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-        return response.text
+        try:
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            return response.text
+        except Exception as e:
+            logger.error(f"Synthesis engine failure: {e}")
+            return "I encountered an internal error compiling your context answer."
 
 ai_service = AIService()

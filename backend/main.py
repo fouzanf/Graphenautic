@@ -1,6 +1,12 @@
 import os
-from dotenv import load_dotenv
+import sys
+import logging
 
+backend_root = os.path.dirname(os.path.abspath(__file__))
+if backend_root not in sys.path:
+    sys.path.insert(0, backend_root)
+
+from dotenv import load_dotenv
 load_dotenv()
 print(f'NEO4J_URI status: {"Loaded" if os.getenv("NEO4J_URI") else "NOT FOUND"}')
 
@@ -11,7 +17,8 @@ from services.pipeline import pipeline
 from services.retriever import retriever
 from services.graph_service import graph_service
 import shutil
-import logging
+import uuid
+from typing import Optional
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -19,12 +26,13 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Axiom GraphRAG API")
 
+# PRODUCTION CORS: Allows both local testing AND your live Vercel UI
 origins = [
-    "http://localhost:3000",    # Your frontend's address
-    "http://127.0.0.1:3000",   # Sometimes browsers use the IP instead
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://graphenautic.vercel.app",  # Add your frontend Vercel URL
 ]
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -32,9 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-import uuid
-from typing import Optional
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...), session_id: Optional[str] = Form(None), user_id: str = Form("anonymous")):
@@ -89,4 +94,5 @@ async def get_sessions():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Enforce standard main string initialization pattern
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -31,7 +31,8 @@ export default function GraphWorkspacePage() {
     const loadSessions = async () => {
       setError(null);
       try {
-        const res = await fetch("http://127.0.0.1:8000/sessions");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+        const res = await fetch(`${apiUrl}/sessions`);
         if (res.ok) {
           const data = await res.json();
           if (data.sessions && data.sessions.length > 0) {
@@ -138,7 +139,7 @@ export default function GraphWorkspacePage() {
               <>
                 {/* Click outside backdrop */}
                 <div className="fixed inset-0 z-40 cursor-default" onClick={() => setDropdownOpen(false)} />
-                
+
                 {/* Dropdown content */}
                 <div className="absolute top-full mt-2 left-0 w-64 bg-[#050b1e]/95 backdrop-blur-2xl border border-slate-800 rounded-xl shadow-2xl p-2 z-50 flex flex-col gap-1 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-3 py-1.5 text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider">Recent Sessions</div>
@@ -149,11 +150,10 @@ export default function GraphWorkspacePage() {
                         handleSwitchSession(session.id);
                         setDropdownOpen(false);
                       }}
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-left text-xs font-medium transition-all ${
-                        activeSessionId === session.id
+                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-left text-xs font-medium transition-all ${activeSessionId === session.id
                           ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
                           : 'text-slate-300 hover:bg-white/5 border border-transparent hover:text-white'
-                      }`}
+                        }`}
                     >
                       <span className="truncate pr-2">{session.name}</span>
                       {activeSessionId === session.id && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />}
@@ -167,11 +167,10 @@ export default function GraphWorkspacePage() {
           {/* History Panel Toggle Button */}
           <button
             onClick={() => setHistoryOpen(!historyOpen)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border transition-all text-xs font-bold ${
-              historyOpen
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border transition-all text-xs font-bold ${historyOpen
                 ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]'
                 : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-            }`}
+              }`}
             title="Toggle Session History"
           >
             <History className="w-4 h-4 text-blue-400" />
@@ -192,22 +191,20 @@ export default function GraphWorkspacePage() {
           <div className="h-5 w-[1px] bg-slate-800/80 mx-1" />
 
           {/* Knowledge Vault Toggle Button */}
-          <button 
-            onClick={() => setLeftOpen(!leftOpen)} 
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold ${
-              leftOpen ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-            }`}
+          <button
+            onClick={() => setLeftOpen(!leftOpen)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold ${leftOpen ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+              }`}
           >
             <Menu className="w-4 h-4" />
             <span className="hidden md:inline">Knowledge Vault</span>
           </button>
 
           {/* Neural Copilot Toggle Button */}
-          <button 
-            onClick={() => setRightOpen(!rightOpen)} 
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold ${
-              rightOpen ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-            }`}
+          <button
+            onClick={() => setRightOpen(!rightOpen)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all text-xs font-bold ${rightOpen ? 'bg-purple-600 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+              }`}
           >
             <MessageSquare className="w-4 h-4" />
             <span className="hidden md:inline">Neural Copilot</span>
@@ -247,7 +244,7 @@ export default function GraphWorkspacePage() {
 
         {/* Backdrop for mobile panels */}
         {(leftOpen || rightOpen) && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-20 lg:hidden"
             onClick={() => { setLeftOpen(false); setRightOpen(false); }}
           />
@@ -256,23 +253,22 @@ export default function GraphWorkspacePage() {
 
       {/* Slide-out History Panel Backdrop */}
       {historyOpen && (
-        <div 
+        <div
           className="fixed inset-0 top-16 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300"
           onClick={() => setHistoryOpen(false)}
         />
       )}
 
       {/* Slide-out History Panel */}
-      <aside className={`fixed top-16 right-0 bottom-0 w-80 bg-[#030715]/95 backdrop-blur-3xl border-l border-slate-800/80 z-50 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-in-out flex flex-col ${
-        historyOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      <aside className={`fixed top-16 right-0 bottom-0 w-80 bg-[#030715]/95 backdrop-blur-3xl border-l border-slate-800/80 z-50 shadow-[-20px_0_50px_rgba(0,0,0,0.8)] transition-transform duration-300 ease-in-out flex flex-col ${historyOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}>
         {/* Panel Header */}
         <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2 font-mono text-xs font-bold text-slate-400 uppercase tracking-wider">
             <History className="w-4 h-4 text-blue-400" />
             <span>Session History</span>
           </div>
-          <button 
+          <button
             onClick={() => setHistoryOpen(false)}
             className="p-1 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
           >
@@ -292,11 +288,10 @@ export default function GraphWorkspacePage() {
                   handleSwitchSession(session.id);
                   setHistoryOpen(false);
                 }}
-                className={`w-full p-3.5 rounded-xl border text-left transition-all duration-300 group relative overflow-hidden flex flex-col gap-1.5 cursor-pointer ${
-                  activeSessionId === session.id
+                className={`w-full p-3.5 rounded-xl border text-left transition-all duration-300 group relative overflow-hidden flex flex-col gap-1.5 cursor-pointer ${activeSessionId === session.id
                     ? 'bg-blue-600/10 border-blue-500/40 text-white shadow-[0_0_15px_rgba(59,130,246,0.15)]'
                     : 'bg-[#050a1c]/40 border-slate-800/60 text-slate-400 hover:text-slate-200 hover:border-slate-700/80 hover:bg-[#07102e]/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between w-full">
                   <span className={`text-xs font-bold truncate pr-2 ${activeSessionId === session.id ? 'text-blue-400' : 'text-slate-300 group-hover:text-white'}`}>

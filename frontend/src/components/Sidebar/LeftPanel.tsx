@@ -93,7 +93,8 @@ export const LeftPanel = () => {
       if (activeSessionId) {
         queryParams.append("session_id", activeSessionId);
       }
-      const url = `http://127.0.0.1:8000/graph?${queryParams.toString()}`;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const url = `${apiUrl}/graph?${queryParams.toString()}`;
       const graphRes = await fetch(url);
       if (graphRes.ok) {
         const graphData = await graphRes.json();
@@ -196,7 +197,7 @@ export const LeftPanel = () => {
     if (activeSessionId) {
       formData.append("session_id", activeSessionId);
     }
-    
+
     // Explicitly set user_id with fallback to guest_user
     const userId = session?.user?.email || session?.user?.name || "guest_user";
     formData.append("user_id", userId);
@@ -233,7 +234,7 @@ export const LeftPanel = () => {
 
   return (
     <div className="h-full w-full flex flex-col bg-transparent border-r border-slate-800/80 relative text-slate-100 overflow-hidden font-sans">
-      
+
       {/* Uploading Progress Top Bar */}
       {isUploading && (
         <div className="h-1 w-full bg-slate-900 absolute top-0 left-0 z-50 overflow-hidden">
@@ -368,13 +369,13 @@ export const LeftPanel = () => {
                 </div>
               ) : (
                 documents.map((doc) => (
-                  <Card 
-                    key={doc.id} 
+                  <Card
+                    key={doc.id}
                     onClick={() => toggleDocumentSelection(doc.id)}
                     className={cn(
                       "p-4 bg-[#050b1e]/80 backdrop-blur-xl border border-slate-800/80 border-l-[4px] transition-all duration-300 group shadow-[0_10px_20px_rgba(0,0,0,0.5)] rounded-2xl cursor-pointer w-full",
-                      doc.selected !== false 
-                        ? "border-l-blue-500 hover:border-blue-500/60 hover:bg-[#0a1538]/90" 
+                      doc.selected !== false
+                        ? "border-l-blue-500 hover:border-blue-500/60 hover:bg-[#0a1538]/90"
                         : "border-l-slate-600 opacity-50 hover:opacity-75 hover:bg-[#0a1538]/40"
                     )}
                   >

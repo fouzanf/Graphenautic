@@ -2,8 +2,6 @@ node_modules
 # Local environment secret variables
 .env
 backend/.env
-config.py
-backend/config.py
 
 # Ignore Next.js build cache folder
 .next/

@@ -1,6 +1,15 @@
 from google import genai
 from google.genai import types
-from config import settings
+try:
+    from config import settings
+except ImportError:
+    try:
+        from ..config import settings
+    except (ImportError, ValueError):
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from config import settings
 from models import GraphData
 import json
 import logging

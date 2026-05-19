@@ -1,12 +1,6 @@
 import os
-import sys
-import logging
-
-backend_root = os.path.dirname(os.path.abspath(__file__))
-if backend_root not in sys.path:
-    sys.path.insert(0, backend_root)
-
 from dotenv import load_dotenv
+
 load_dotenv()
 print(f'NEO4J_URI status: {"Loaded" if os.getenv("NEO4J_URI") else "NOT FOUND"}')
 

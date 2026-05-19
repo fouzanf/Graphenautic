@@ -2,8 +2,8 @@ import json
 import logging
 from google import genai
 from google.genai import types
-from config import settings
-from models import GraphData
+from ..config import settings
+from ..models import GraphData
 
 logger = logging.getLogger(__name__)
 

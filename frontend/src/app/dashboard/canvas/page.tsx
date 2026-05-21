@@ -8,6 +8,22 @@ import { RightPanel } from '@/components/Sidebar/RightPanel';
 import { GraphCanvas } from '@/components/Graph/GraphCanvas';
 import { useGraphStore } from '@/store/useGraphStore';
 import { v4 as uuidv4 } from 'uuid';
+import { useSession } from 'next-auth/react';
+
+const DEFAULT_NODES = [
+  { id: '1', type: 'entityNode', position: { x: 250, y: 50 }, data: { label: 'Large Language Model', category: 'Concept' } },
+  { id: '2', type: 'entityNode', position: { x: 100, y: 200 }, data: { label: 'Transformer Architecture', category: 'Technology' } },
+  { id: '3', type: 'entityNode', position: { x: 400, y: 200 }, data: { label: 'Self-Attention Mechanism', category: 'Algorithm' } },
+  { id: '4', type: 'entityNode', position: { x: 100, y: 350 }, data: { label: 'Google Brain', category: 'Organization' } },
+  { id: '5', type: 'entityNode', position: { x: 250, y: 350 }, data: { label: 'Attention is All You Need', category: 'Publication' } },
+];
+const DEFAULT_EDGES = [
+  { id: 'e1-2', source: '2', target: '1', label: 'FOUNDATIONAL_TO', animated: true },
+  { id: 'e2-3', source: '2', target: '3', label: 'UTILIZES', animated: true },
+  { id: 'e4-2', source: '4', target: '2', label: 'DEVELOPED', animated: false },
+  { id: 'e4-5', source: '4', target: '5', label: 'PUBLISHED', animated: false },
+  { id: 'e5-2', source: '5', target: '2', label: 'INTRODUCED', animated: true },
+];
 import { Menu, MessageSquare, ChevronDown, Plus, Check, History, X } from 'lucide-react';
 
 interface SessionObject {
@@ -20,6 +36,7 @@ export default function GraphWorkspacePage() {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
+  const { data: session } = useSession();
   const { activeSessionId, setActiveSessionId, setNodes, setEdges, setMessages, setDocuments } = useGraphStore();
   const [sessionsList, setSessionsList] = useState<SessionObject[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -30,11 +47,27 @@ export default function GraphWorkspacePage() {
   useEffect(() => {
     setMounted(true);
 
+    // Don't run until we know who the user is
+    if (!session?.user?.email) return;
+
+    const userEmail = session.user.email;
+
     const loadSessions = async () => {
       setError(null);
+
+      // ✅ Always reset to hardcoded default first
+      setNodes(DEFAULT_NODES as any);
+      setEdges(DEFAULT_EDGES as any);
+
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/sessions`, { cache: 'no-store' });
+
+        // ✅ Pass user_id so you only get THIS user's sessions
+        const res = await fetch(
+          `${apiUrl}/sessions?user_id=${encodeURIComponent(userEmail)}`,
+          { cache: 'no-store' }
+        );
+
         if (res.ok) {
           const data = await res.json();
           if (data.sessions && data.sessions.length > 0) {
@@ -45,6 +78,21 @@ export default function GraphWorkspacePage() {
             }));
             setSessionsList(mapped);
             setActiveSessionId(mapped[0].id);
+
+            // ✅ Fetch this user's actual graph for their latest session
+            const graphRes = await fetch(
+              `${apiUrl}/graph?session_id=${mapped[0].id}&user_id=${encodeURIComponent(userEmail)}`,
+              { cache: 'no-store' }
+            );
+            if (graphRes.ok) {
+              const graphData = await graphRes.json();
+              // ✅ Only overwrite default if real data exists
+              if (graphData.nodes && graphData.nodes.length > 0) {
+                setNodes(graphData.nodes);
+                setEdges(graphData.edges ?? []);
+              }
+              // else: keep the hardcoded default — do nothing
+            }
             return;
           }
         } else {
@@ -55,7 +103,7 @@ export default function GraphWorkspacePage() {
         setError('Backend server unreachable. Please check connection.');
       }
 
-      // Default fallback session
+      // New user — no sessions in DB, create a local default session
       const initialId = uuidv4();
       const initialSession: SessionObject = {
         id: initialId,
@@ -64,25 +112,44 @@ export default function GraphWorkspacePage() {
       };
       setActiveSessionId(initialId);
       setSessionsList([initialSession]);
+      // Hardcoded default already set at top — nothing more needed
     };
 
     loadSessions();
-  }, [setActiveSessionId]);
+  }, [session?.user?.email, setActiveSessionId, setNodes, setEdges]); // ✅ Re-runs on account switch
 
-  const handleSwitchSession = (sessionId: string) => {
+  const handleSwitchSession = async (sessionId: string) => {
     setActiveSessionId(sessionId);
-    // Clear current visual layout and Copilot chat
-    setNodes([]);
-    setEdges([]);
+
+    // Reset to default first
+    setNodes(DEFAULT_NODES as any);
+    setEdges(DEFAULT_EDGES as any);
     setDocuments([]);
-    setMessages([
-      {
-        id: uuidv4(),
-        role: 'assistant',
-        content: "Session loaded. The knowledge graph is synchronized.",
-        timestamp: Date.now(),
+    setMessages([{
+      id: uuidv4(),
+      role: 'assistant',
+      content: "Session loaded. The knowledge graph is synchronized.",
+      timestamp: Date.now(),
+    }]);
+
+    // Then fetch real data for this session
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const userEmail = session?.user?.email;
+      const res = await fetch(
+        `${apiUrl}/graph?session_id=${sessionId}&user_id=${encodeURIComponent(userEmail ?? '')}`,
+        { cache: 'no-store' }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.nodes && data.nodes.length > 0) {
+          setNodes(data.nodes);
+          setEdges(data.edges ?? []);
+        }
       }
-    ]);
+    } catch (err) {
+      console.error("Failed to load session graph:", err);
+    }
   };
 
   const handleNewSession = () => {

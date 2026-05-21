@@ -25,14 +25,14 @@ export const ChatMessage = ({ message }: { message: ChatMessageType }) => {
           <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
         </div>
       )}
-      
+
       <div className={cn(
         "max-w-[85%] flex flex-col group min-w-0",
         isAssistant ? "items-start" : "items-end"
       )}>
         <div className={cn(
-          "space-y-2 relative transition-all duration-300 shadow-lg backdrop-blur-xl max-w-full break-words whitespace-pre-wrap overflow-x-auto",
-          !isAssistant 
+          "space-y-2 relative transition-all duration-300 shadow-lg backdrop-blur-xl max-w-full break-words overflow-x-auto",
+          !isAssistant
             ? "bg-blue-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-[0_5px_20px_rgba(59,130,246,0.4)] font-medium self-end"
             : "bg-[#0f172a] border border-slate-700 border-l-[4px] border-l-cyan-400 px-6 py-4 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.8)] font-normal self-start"
         )}>
@@ -48,7 +48,7 @@ export const ChatMessage = ({ message }: { message: ChatMessageType }) => {
             </div>
           )}
           <div className={cn(
-            "text-sm leading-relaxed prose prose-invert max-w-none break-words whitespace-pre-wrap overflow-x-hidden prose-p:my-1.5 prose-p:leading-relaxed prose-li:my-1 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:text-white prose-headings:font-bold prose-strong:text-cyan-300 prose-pre:bg-[#030716] prose-pre:border prose-pre:border-blue-500/30 prose-pre:text-cyan-300 prose-pre:shadow-inner prose-pre:whitespace-pre-wrap prose-pre:break-words prose-code:text-cyan-400 prose-code:bg-[#030716] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:border prose-code:border-blue-500/20",
+            "text-sm leading-relaxed prose prose-invert max-w-none break-words overflow-x-hidden prose-p:my-1.5 prose-p:leading-relaxed prose-li:my-1 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:text-white prose-headings:font-bold prose-strong:text-cyan-300 prose-pre:bg-[#030716] prose-pre:border prose-pre:border-blue-500/30 prose-pre:text-cyan-300 prose-pre:shadow-inner prose-pre:whitespace-pre-wrap prose-pre:break-words prose-code:text-cyan-400 prose-code:bg-[#030716] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:border prose-code:border-blue-500/20",
             isAssistant ? "text-slate-200" : "text-white"
           )}>
             <ReactMarkdown>{message.content}</ReactMarkdown>

@@ -46,7 +46,7 @@ export const LeftPanel = () => {
   // Group entities
   const groupedEntities = useMemo(() => {
     const groups: Record<string, typeof nodes> = {};
-    const filteredNodes = nodes.filter(n => n.data.label.toLowerCase().includes(entitySearchQuery.toLowerCase()));
+    const filteredNodes = nodes.filter(n => n.data?.label?.toLowerCase().includes(entitySearchQuery.toLowerCase()) ?? false);
 
     filteredNodes.forEach(node => {
       const cat = node.data.category || 'Other';

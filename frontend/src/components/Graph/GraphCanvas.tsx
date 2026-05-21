@@ -83,8 +83,8 @@ const GraphCanvasContent = () => {
       navigator.clipboard.writeText(JSON.stringify({ nodes, edges }, null, 2));
       alert('Graph JSON copied to clipboard!');
     } else if (type === 'csv') {
-      const csvContent = "data:text/csv;charset=utf-8," 
-        + "ID,Label,Category\n" 
+      const csvContent = "data:text/csv;charset=utf-8,"
+        + "ID,Label,Category\n"
         + nodes.map(n => `"${n.id}","${n.data.label}","${n.data.category}"`).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -132,12 +132,13 @@ const GraphCanvasContent = () => {
     return index >= 0 ? colors[index % colors.length] : "";
   };
 
-  const processedNodes = useMemo(() => nodes.map(node => {
+  // AFTER:
+  const processedNodes = useMemo(() => nodes.filter(n => n?.data?.label).map(node => {
     const isSearchMatch = searchQuery.trim() !== '' && node.data.label.toLowerCase().includes(searchQuery.toLowerCase());
     const isDimmedBySearch = searchQuery.trim() !== '' && !isSearchMatch;
-    
+
     const isSelected = node.id === selectedNodeId;
-    
+
     const isRelated = selectedNodeId && edges.some(e =>
       (e.source === selectedNodeId && e.target === node.id) ||
       (e.target === selectedNodeId && e.source === node.id)
@@ -198,7 +199,7 @@ const GraphCanvasContent = () => {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#020512] relative group overflow-hidden font-sans">
-      
+
       {/* Cybernetic Corner Brackets HUD */}
       <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-blue-500/40 pointer-events-none z-20"></div>
       <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-blue-500/40 pointer-events-none z-20"></div>
@@ -269,13 +270,13 @@ const GraphCanvasContent = () => {
             nodeColor="#06b6d4"
             maskColor="rgba(2, 5, 18, 0.85)"
           />
-          
+
           {/* Top-Left Search */}
           <Panel position="top-left" className="bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center px-4 py-3 z-50">
             <Search className="w-4 h-4 text-cyan-400 mr-3 animate-pulse" />
-            <input 
-              type="text" 
-              placeholder="Search graph entity..." 
+            <input
+              type="text"
+              placeholder="Search graph entity..."
               className="bg-transparent border-none text-sm text-white placeholder:text-slate-500 focus:outline-none w-64 font-mono font-bold"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -317,7 +318,7 @@ const GraphCanvasContent = () => {
               setNodes(nodes.map(n => ({ ...n, selected: false })));
             }} className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 transition-colors">✕</button>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto py-6 space-y-6">
             <div>
               <h4 className="text-xs font-mono font-black text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -329,8 +330,8 @@ const GraphCanvasContent = () => {
                   const connectedNodeId = isSource ? edge.target : edge.source;
                   const connectedNode = nodes.find(n => n.id === connectedNodeId);
                   return (
-                    <div 
-                      key={edge.id} 
+                    <div
+                      key={edge.id}
                       onClick={() => {
                         if (connectedNodeId) {
                           setFocusedNodeId(connectedNodeId);
@@ -355,7 +356,7 @@ const GraphCanvasContent = () => {
           </div>
 
           <div className="pt-6 border-t border-slate-800 shrink-0 space-y-3">
-            <button 
+            <button
               onClick={() => {
                 submitQuery(`Tell me everything about ${selectedNode.data.label}, including all its direct citations and underlying semantics.`);
               }}

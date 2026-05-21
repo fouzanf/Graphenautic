@@ -95,7 +95,7 @@ export const LeftPanel = () => {
       }
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const url = `${apiUrl}/graph?${queryParams.toString()}`;
-      const graphRes = await fetch(url);
+      const graphRes = await fetch(url, { cache: 'no-store' });
       if (graphRes.ok) {
         const graphData = await graphRes.json();
 
@@ -203,8 +203,9 @@ export const LeftPanel = () => {
     formData.append("user_id", userId);
 
     try {
-      console.log("Starting upload to http://127.0.0.1:8000/upload...");
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      console.log(`Starting upload to ${apiUrl}/upload...`);
+      const response = await fetch(`${apiUrl}/upload`, {
         method: "POST",
         body: formData,
       });

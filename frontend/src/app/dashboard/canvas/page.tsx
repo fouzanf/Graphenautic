@@ -1,4 +1,6 @@
 "use client";
+
+export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { LeftPanel } from '@/components/Sidebar/LeftPanel';
@@ -32,7 +34,7 @@ export default function GraphWorkspacePage() {
       setError(null);
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/sessions`);
+        const res = await fetch(`${apiUrl}/sessions`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           if (data.sessions && data.sessions.length > 0) {
@@ -151,8 +153,8 @@ export default function GraphWorkspacePage() {
                         setDropdownOpen(false);
                       }}
                       className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-left text-xs font-medium transition-all ${activeSessionId === session.id
-                          ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                          : 'text-slate-300 hover:bg-white/5 border border-transparent hover:text-white'
+                        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
+                        : 'text-slate-300 hover:bg-white/5 border border-transparent hover:text-white'
                         }`}
                     >
                       <span className="truncate pr-2">{session.name}</span>
@@ -168,8 +170,8 @@ export default function GraphWorkspacePage() {
           <button
             onClick={() => setHistoryOpen(!historyOpen)}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border transition-all text-xs font-bold ${historyOpen
-                ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]'
-                : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+              ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]'
+              : 'bg-[#050b1e]/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
               }`}
             title="Toggle Session History"
           >
@@ -289,8 +291,8 @@ export default function GraphWorkspacePage() {
                   setHistoryOpen(false);
                 }}
                 className={`w-full p-3.5 rounded-xl border text-left transition-all duration-300 group relative overflow-hidden flex flex-col gap-1.5 cursor-pointer ${activeSessionId === session.id
-                    ? 'bg-blue-600/10 border-blue-500/40 text-white shadow-[0_0_15px_rgba(59,130,246,0.15)]'
-                    : 'bg-[#050a1c]/40 border-slate-800/60 text-slate-400 hover:text-slate-200 hover:border-slate-700/80 hover:bg-[#07102e]/60'
+                  ? 'bg-blue-600/10 border-blue-500/40 text-white shadow-[0_0_15px_rgba(59,130,246,0.15)]'
+                  : 'bg-[#050a1c]/40 border-slate-800/60 text-slate-400 hover:text-slate-200 hover:border-slate-700/80 hover:bg-[#07102e]/60'
                   }`}
               >
                 <div className="flex items-center justify-between w-full">

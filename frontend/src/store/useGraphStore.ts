@@ -163,7 +163,8 @@ export const useGraphStore = create<GraphState>((set, get) => ({
 
     set({ isThinking: true });
     try {
-      const res = await fetch("http://127.0.0.1:8000/query", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

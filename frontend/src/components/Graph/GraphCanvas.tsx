@@ -26,28 +26,28 @@ const GraphTools = ({ onToggleLabels, onExport, onLayout }: { onToggleLabels: ()
   const [showExport, setShowExport] = React.useState(false);
 
   return (
-    <Panel position="top-right" className="flex items-center gap-2 bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] relative z-50">
+    <div className="flex flex-row items-center gap-1 bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] pointer-events-auto">
       <button onClick={() => zoomIn()} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Zoom In"><ZoomIn className="w-4 h-4" /></button>
       <button onClick={() => zoomOut()} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Zoom Out"><ZoomOut className="w-4 h-4" /></button>
-      <div className="w-px h-5 bg-slate-800" />
+      <div className="h-5 w-px bg-slate-800" />
       <button onClick={() => fitView({ duration: 800, padding: 0.2 })} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Fit View"><Maximize className="w-4 h-4" /></button>
       <button onClick={onLayout} className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-blue-500/10 rounded-xl transition-all" title="Auto Layout Matrix"><RotateCcw className="w-4 h-4 animate-spin" style={{ animationDuration: '20s' }} /></button>
-      <div className="w-px h-5 bg-slate-800" />
+      <div className="h-5 w-px bg-slate-800" />
       <button onClick={onToggleLabels} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Toggle Typography"><Type className="w-4 h-4" /></button>
-      <div className="w-px h-5 bg-slate-800" />
+      <div className="h-5 w-px bg-slate-800" />
       <div className="relative">
-        <button onClick={() => setShowExport(!showExport)} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all flex items-center gap-1.5" title="Export">
+        <button onClick={() => setShowExport(!showExport)} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all flex items-center justify-center" title="Export">
           <Download className="w-4 h-4" />
         </button>
         {showExport && (
-          <div className="absolute right-0 top-full mt-3 w-56 bg-[#060e26]/95 backdrop-blur-3xl border border-blue-500/40 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] py-2 z-50">
+          <div className="absolute bottom-full mb-3 right-0 w-56 bg-[#060e26]/95 backdrop-blur-3xl border border-blue-500/40 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] py-2 z-50">
             <button onClick={() => { onExport('png'); setShowExport(false); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-blue-500/20 hover:text-cyan-300 flex items-center gap-2.5 transition-colors"><Share className="w-4 h-4 text-blue-400" /> PNG High-Res Screenshot</button>
             <button onClick={() => { onExport('csv'); setShowExport(false); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-blue-500/20 hover:text-cyan-300 flex items-center gap-2.5 transition-colors"><FileText className="w-4 h-4 text-purple-400" /> Export Entities Matrix (CSV)</button>
             <button onClick={() => { onExport('json'); setShowExport(false); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-300 hover:bg-blue-500/20 hover:text-cyan-300 flex items-center gap-2.5 transition-colors"><FileJson className="w-4 h-4 text-cyan-400" /> Copy Raw Graph JSON</button>
           </div>
         )}
       </div>
-    </Panel>
+    </div>
   );
 };
 
@@ -69,7 +69,6 @@ const GraphCanvasContent = () => {
 
   const { fitView } = useReactFlow();
 
-  // Auto focus node
   React.useEffect(() => {
     if (focusedNodeId) {
       setTimeout(() => {
@@ -132,20 +131,16 @@ const GraphCanvasContent = () => {
     return index >= 0 ? colors[index % colors.length] : "";
   };
 
-  // AFTER:
   const processedNodes = useMemo(() => nodes.filter(n => n?.data?.label).map(node => {
     const isSearchMatch = searchQuery.trim() !== '' && node.data.label.toLowerCase().includes(searchQuery.toLowerCase());
     const isDimmedBySearch = searchQuery.trim() !== '' && !isSearchMatch;
-
     const isSelected = node.id === selectedNodeId;
-
     const isRelated = selectedNodeId && edges.some(e =>
       (e.source === selectedNodeId && e.target === node.id) ||
       (e.target === selectedNodeId && e.source === node.id)
     );
     const isDimmedBySelection = selectedNodeId && node.id !== selectedNodeId && !isRelated;
-
-    const docSources = node.data.documentSources || [];
+    const docSources = node.data?.documentSources || [];
     const docAccentClass = docSources.length > 0 ? getDocAccent(docSources[0], documents) : "";
 
     return {
@@ -172,27 +167,13 @@ const GraphCanvasContent = () => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
     dagreGraph.setGraph({ rankdir: 'TB', nodesep: 100, ranksep: 150 });
-
-    nodes.forEach((n) => {
-      dagreGraph.setNode(n.id, { width: 180, height: 70 });
-    });
-    edges.forEach((e) => {
-      dagreGraph.setEdge(e.source, e.target);
-    });
-
+    nodes.forEach((n) => { dagreGraph.setNode(n.id, { width: 180, height: 70 }); });
+    edges.forEach((e) => { dagreGraph.setEdge(e.source, e.target); });
     dagre.layout(dagreGraph);
-
     const layoutedNodes = nodes.map((n) => {
       const nodeWithPosition = dagreGraph.node(n.id);
-      return {
-        ...n,
-        position: {
-          x: nodeWithPosition.x - 90,
-          y: nodeWithPosition.y - 35,
-        },
-      };
+      return { ...n, position: { x: nodeWithPosition.x - 90, y: nodeWithPosition.y - 35 } };
     });
-
     setNodes(layoutedNodes);
     setTimeout(() => fitView({ duration: 800, padding: 0.2 }), 50);
   }, [nodes, edges, setNodes, fitView]);
@@ -201,21 +182,21 @@ const GraphCanvasContent = () => {
     <div className="w-full h-full flex flex-col bg-[#020512] relative group overflow-hidden font-sans">
 
       {/* Cybernetic Corner Brackets HUD */}
-      <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-blue-500/40 pointer-events-none z-20"></div>
-      <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-blue-500/40 pointer-events-none z-20"></div>
-      <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-blue-500/40 pointer-events-none z-20"></div>
-      <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-blue-500/40 pointer-events-none z-20"></div>
+      <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-blue-500/40 pointer-events-none z-20" />
+      <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-blue-500/40 pointer-events-none z-20" />
+      <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-blue-500/40 pointer-events-none z-20" />
+      <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-blue-500/40 pointer-events-none z-20" />
 
       {/* Top Stats HUD Bar */}
       <div className="flex items-center justify-between px-6 py-2.5 bg-[#03081a]/90 backdrop-blur-xl border-b border-blue-500/30 text-slate-300 text-xs font-mono tracking-widest z-20 shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse" />
             <span className="font-bold text-white">NODES: {nodes.length}</span>
           </div>
           <span className="text-slate-700">|</span>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]"></span>
+            <span className="w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
             <span className="font-bold text-white">EDGES: {edges.length}</span>
           </div>
           <span className="text-slate-700">|</span>
@@ -229,7 +210,8 @@ const GraphCanvasContent = () => {
         </div>
       </div>
 
-      <div className="flex-1 relative min-h-0">
+      {/* ReactFlow Canvas — must be flex-1 with min-h-0 to fill remaining space */}
+      <div className="flex-1 min-h-0 relative w-full">
         <ReactFlow
           nodes={processedNodes}
           edges={processedEdges}
@@ -247,82 +229,89 @@ const GraphCanvasContent = () => {
           defaultEdgeOptions={{
             type: 'default',
             style: { stroke: '#06b6d4', strokeWidth: 2 },
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 15,
-              height: 15,
-              color: '#06b6d4',
-            },
+            markerEnd: { type: MarkerType.ArrowClosed, width: 15, height: 15, color: '#06b6d4' },
           }}
-          className="transition-opacity duration-500"
-          style={{ background: '#020512' }}
+          style={{ background: '#020512', width: '100%', height: '100%' }}
         >
-          <Background
-            variant={BackgroundVariant.Lines}
-            gap={40}
-            size={1}
-            color="#08132e"
-            className="opacity-80"
-          />
-          <MiniMap
-            position={selectedNode ? "bottom-left" : "bottom-right"}
-            className="!bg-[#050b1e]/90 backdrop-blur-2xl !border-blue-500/40 !rounded-2xl !shadow-2xl overflow-hidden p-2 border"
-            nodeColor="#06b6d4"
-            maskColor="rgba(2, 5, 18, 0.85)"
-          />
+          <Background variant={BackgroundVariant.Lines} gap={40} size={1} color="#08132e" className="opacity-80" />
 
-          {/* Top-Left Search */}
-          <Panel position="top-left" className="bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center px-4 py-3 z-50">
-            <Search className="w-4 h-4 text-cyan-400 mr-3 animate-pulse" />
-            <input
-              type="text"
-              placeholder="Search graph entity..."
-              className="bg-transparent border-none text-sm text-white placeholder:text-slate-500 focus:outline-none w-64 font-mono font-bold"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          {/* Top-Left: Search */}
+          <Panel position="top-left" className="mt-3 ml-4 pointer-events-auto z-50">
+            <div className="bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center px-4 py-2.5 w-56 sm:w-64">
+              <Search className="w-4 h-4 text-cyan-400 mr-3 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search graph entity..."
+                className="bg-transparent border-none text-sm text-white placeholder:text-slate-500 focus:outline-none w-full font-mono font-bold"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </Panel>
 
-          {/* Top-Right Custom Controls */}
-          <GraphTools onToggleLabels={() => setLabelsVisible(prev => !prev)} onExport={handleExport} onLayout={applyAutoLayout} />
-
-          {/* Bottom-Left Legend HUD */}
-          <Panel position="bottom-left" className="bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] space-y-3 z-50">
-            <p className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1.5 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-              <span>Entity Schema Map</span>
-            </p>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-bold text-slate-300">
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>Person</div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>Concept</div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>Org</div>
-              <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]"></div>Tech</div>
+          {/* Bottom-Left: Legend */}
+          <Panel position="bottom-left" className="mb-6 ml-4 pointer-events-auto z-50">
+            <div className="bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] space-y-3">
+              <p className="text-[10px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1.5 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                <span>Entity Schema Map</span>
+              </p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-bold text-slate-300">
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />Person</div>
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />Concept</div>
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />Org</div>
+                <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)]" />Tech</div>
+              </div>
             </div>
+          </Panel>
+
+          {/* Bottom-Right: MiniMap + Tools (separate panels, stacked) */}
+          <Panel
+            position="bottom-right"
+            className={cn(
+              "mb-6 mr-4 flex flex-col items-end gap-2 pointer-events-auto z-50 transition-all duration-300",
+              selectedNode && "mr-[26rem]"
+            )}
+          >
+            <MiniMap
+              className="!relative !bottom-auto !right-auto !left-auto !top-auto !m-0 !bg-[#050b1e]/90 backdrop-blur-2xl !border-blue-500/40 !rounded-2xl !shadow-2xl overflow-hidden border"
+              nodeColor="#06b6d4"
+              maskColor="rgba(2, 5, 18, 0.85)"
+              style={{ width: 160, height: 100 }}
+            />
+            <GraphTools
+              onToggleLabels={() => setLabelsVisible(prev => !prev)}
+              onExport={handleExport}
+              onLayout={applyAutoLayout}
+            />
           </Panel>
 
         </ReactFlow>
       </div>
 
-      {/* Elite Interaction Slide-in Panel */}
+      {/* Node Detail Slide-in Panel */}
       {selectedNode && (
-        <div className="absolute right-6 top-20 bottom-6 w-96 flex flex-col z-50 bg-[#060e26]/95 backdrop-blur-3xl border border-cyan-400/60 shadow-[0_30px_100px_rgba(0,0,0,0.95)] rounded-3xl p-7 text-white transition-all duration-300 ease-out overflow-hidden animate-slide-left">
-          <div className="pb-5 border-b border-slate-800 flex justify-between items-start shrink-0 relative">
+        <div className="absolute right-6 top-20 bottom-6 w-96 flex flex-col z-50 bg-[#060e26]/95 backdrop-blur-3xl border border-cyan-400/60 shadow-[0_30px_100px_rgba(0,0,0,0.95)] rounded-3xl p-7 text-white transition-all duration-300 ease-out overflow-hidden animate-slide-left pointer-events-auto">
+          <div className="pb-5 border-b border-slate-800 flex justify-between items-start shrink-0">
             <div>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-black bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-cyan-500/40 text-cyan-300 mb-3 shadow">
                 <span>✦</span> <span>{selectedNode.data.category}</span>
               </span>
               <h3 className="text-2xl font-black text-white leading-tight tracking-tight drop-shadow">{selectedNode.data.label}</h3>
             </div>
-            <button onClick={() => {
-              setFocusedNodeId(null);
-              setNodes(nodes.map(n => ({ ...n, selected: false })));
-            }} className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 transition-colors">✕</button>
+            <button
+              onClick={() => {
+                setFocusedNodeId(null);
+                setNodes(nodes.map(n => ({ ...n, selected: false })));
+              }}
+              className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 transition-colors cursor-pointer"
+            >✕</button>
           </div>
 
           <div className="flex-1 overflow-y-auto py-6 space-y-6">
             <div>
-              <h4 className="text-xs font-mono font-black text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                <span>Semantic Edges ({connectedEdges.length})</span>
+              <h4 className="text-xs font-mono font-black text-cyan-400 uppercase tracking-widest mb-3">
+                Semantic Edges ({connectedEdges.length})
               </h4>
               <div className="space-y-2.5">
                 {connectedEdges.map(edge => {
@@ -335,11 +324,7 @@ const GraphCanvasContent = () => {
                       onClick={() => {
                         if (connectedNodeId) {
                           setFocusedNodeId(connectedNodeId);
-                          const updatedNodes = nodes.map(n => ({
-                            ...n,
-                            selected: n.id === connectedNodeId
-                          }));
-                          setNodes(updatedNodes);
+                          setNodes(nodes.map(n => ({ ...n, selected: n.id === connectedNodeId })));
                         }
                       }}
                       className="flex items-center gap-2.5 text-xs bg-[#040817]/90 p-3.5 rounded-2xl border border-blue-500/30 font-mono shadow-inner group hover:border-cyan-400 hover:bg-blue-500/10 hover:scale-[1.02] transition-all cursor-pointer"
@@ -355,12 +340,10 @@ const GraphCanvasContent = () => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-800 shrink-0 space-y-3">
+          <div className="pt-6 border-t border-slate-800 shrink-0">
             <button
-              onClick={() => {
-                submitQuery(`Tell me everything about ${selectedNode.data.label}, including all its direct citations and underlying semantics.`);
-              }}
-              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-sm font-black py-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(59,130,246,0.5)] flex items-center justify-center gap-2 group"
+              onClick={() => submitQuery(`Tell me everything about ${selectedNode.data.label}, including all its direct citations and underlying semantics.`)}
+              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white text-sm font-black py-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(59,130,246,0.5)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-cyan-300 animate-spin" style={{ animationDuration: '6s' }} />
               <span>Synthesize Entity Briefing</span>
@@ -368,7 +351,6 @@ const GraphCanvasContent = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -2,13 +2,13 @@ import React, { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import { EntityNodeData } from '@/types/graph';
 import { cn } from '@/lib/utils';
-import { 
-  User, 
-  Lightbulb, 
-  Building2, 
-  MapPin, 
-  Cpu, 
-  Calendar, 
+import {
+  User,
+  Lightbulb,
+  Building2,
+  MapPin,
+  Cpu,
+  Calendar,
   FileQuestion,
   Layers
 } from 'lucide-react';
@@ -36,16 +36,16 @@ const categoryColors: Record<string, { bg: string; border: string; glow: string;
 export const CustomNode = memo(({ data, selected }: NodeProps<EntityNodeData>) => {
   const styles = categoryColors[data.category] || categoryColors.Other;
   const [isHovered, setIsHovered] = useState(false);
-  
+
   return (
-    <div 
+    <div
       className="relative group cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{ zIndex: isHovered ? 1000 : 1 }}
     >
       <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-[#06b6d4] border-none !min-w-0 !min-h-0 shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-      
+
       {/* Hover / Hold Floating Popover Card */}
       {isHovered && (
         <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-72 bg-[#060e26]/95 backdrop-blur-3xl border border-cyan-400/80 rounded-3xl p-5 text-white shadow-[0_30px_100px_rgba(0,0,0,0.95)] z-[1000] pointer-events-none animate-in fade-in zoom-in-95 duration-200">
@@ -71,7 +71,7 @@ export const CustomNode = memo(({ data, selected }: NodeProps<EntityNodeData>) =
         </div>
       )}
 
-      <div 
+      <div
         className={cn(
           "flex items-center gap-3.5 px-4 py-3 rounded-2xl border transition-all duration-300 max-w-[200px] bg-gradient-to-br backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.95)]",
           styles.bg,
@@ -90,7 +90,7 @@ export const CustomNode = memo(({ data, selected }: NodeProps<EntityNodeData>) =
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-black/40 border border-white/10 shrink-0 shadow-inner">
           {categoryIcons[data.category] || <FileQuestion className="w-4 h-4 text-gray-400" />}
         </div>
-        
+
         <div className="flex flex-col pr-2 min-w-0 flex-1">
           {!data.hideLabel && (
             <>

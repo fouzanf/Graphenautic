@@ -37,7 +37,7 @@ interface RawGraphEdge {
 
 export const LeftPanel = () => {
   const { data: session } = useSession();
-  const { documents, addDocument, toggleDocumentSelection, setNodes, setEdges, nodes, setFocusedNodeId, activeSessionId } = useGraphStore();
+  const { documents, addDocument, toggleDocumentSelection, setNodes, setEdges, nodes, setFocusedNodeId, activeSessionId, setThinking } = useGraphStore();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [entitySearchQuery, setEntitySearchQuery] = useState('');
@@ -192,6 +192,7 @@ export const LeftPanel = () => {
     if (!selectedFile) return;
 
     setIsUploading(true);
+    setThinking(true);
     const formData = new FormData();
     formData.append("file", selectedFile);
     if (activeSessionId) {
@@ -210,10 +211,37 @@ export const LeftPanel = () => {
         body: formData,
       });
 
-      const data = await response.json();
+      // Check if response status is 503
+      const is503Status = response.status === 503;
+
+      let data: any = null;
+      let responseText = "";
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        responseText = await response.text();
+      }
+
+      // Check for 503 or "high demand" / "503" in response body
+      const hasHighDemandText = 
+        responseText.includes("503") || 
+        responseText.toLowerCase().includes("high demand") ||
+        (data && (
+          JSON.stringify(data).includes("503") || 
+          JSON.stringify(data).toLowerCase().includes("high demand")
+        ));
+
+      if (is503Status || hasHighDemandText) {
+        alert("AI Engine is currently experiencing high demand. Your document is saved, please try extracting the graph again in a few seconds!");
+        setIsUploading(false);
+        setThinking(false);
+        return;
+      }
+
       console.log("Upload response:", data);
 
-      if (response.ok) {
+      if (response.ok && data) {
         const newDoc = {
           id: data.document_id,
           name: selectedFile.name,
@@ -224,12 +252,17 @@ export const LeftPanel = () => {
         addDocument(newDoc);
         setSelectedFile(null);
       } else {
-        console.error("Upload failed:", data.detail);
+        console.error("Upload failed:", data?.detail || responseText);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Network error during upload:", error);
+      const errorString = String(error?.message || error || "");
+      if (errorString.includes("503") || errorString.toLowerCase().includes("high demand")) {
+        alert("AI Engine is currently experiencing high demand. Your document is saved, please try extracting the graph again in a few seconds!");
+      }
     } finally {
       setIsUploading(false);
+      setThinking(false);
     }
   };
 

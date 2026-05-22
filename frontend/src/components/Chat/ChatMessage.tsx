@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ChatMessage as ChatMessageType } from '@/types/graph';
 import { cn } from '@/lib/utils';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Copy, Check } from 'lucide-react';
 
 export const ChatMessage = ({ message }: { message: ChatMessageType }) => {
   const isAssistant = message.role === 'assistant';
   const [timeStr, setTimeStr] = React.useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   React.useEffect(() => {
     const handle = setTimeout(() => {
@@ -14,6 +15,14 @@ export const ChatMessage = ({ message }: { message: ChatMessageType }) => {
     }, 0);
     return () => clearTimeout(handle);
   }, [message.timestamp]);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+  };
 
   return (
     <div className={cn(
@@ -53,6 +62,21 @@ export const ChatMessage = ({ message }: { message: ChatMessageType }) => {
           )}>
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </div>
+          {isAssistant && (
+            <div className="flex justify-end mt-2 pt-2">
+              <button
+                onClick={() => handleCopy(message.content)}
+                className="text-slate-500 hover:text-cyan-400 p-1.5 rounded-md hover:bg-blue-500/10 transition-colors"
+                title="Copy to clipboard"
+              >
+                {isCopied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 mt-2 px-1">
           <span suppressHydrationWarning className="text-[10px] font-mono text-slate-500 group-hover:text-slate-400 transition-colors min-h-[14px]">

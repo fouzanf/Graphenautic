@@ -115,24 +115,8 @@ export default function GraphWorkspacePage() {
       timestamp: Date.now(),
     }]);
 
-    // Then fetch real data for this session
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const userEmail = session?.user?.email;
-      const res = await fetch(
-        `${apiUrl}/graph?session_id=${sessionId}&user_id=${encodeURIComponent(userEmail ?? '')}`,
-        { cache: 'no-store' }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data.nodes && data.nodes.length > 0) {
-          setNodes(data.nodes);
-          setEdges(data.edges ?? []);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to load session graph:", err);
-    }
+    // LeftPanel will automatically fetch and format the graph data
+    // based on the new activeSessionId using its updateGraphVisuals effect.
   };
 
   const handleNewSession = () => {

@@ -84,18 +84,22 @@ export const LeftPanel = () => {
   };
 
   const updateGraphVisuals = useCallback(async (docIds: string[]) => {
+    if (!activeSessionId) return; // Prevent fetching before session is initialized
     setError(null);
     try {
       const queryParams = new URLSearchParams();
       if (docIds.length > 0) {
         queryParams.append("document_ids", docIds.join(","));
       }
-      if (activeSessionId) {
-        queryParams.append("session_id", activeSessionId);
-      }
+      queryParams.append("session_id", activeSessionId);
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const url = `${apiUrl}/graph?${queryParams.toString()}`;
       const graphRes = await fetch(url, { cache: 'no-store' });
+      
+      // Prevent race conditions from rapid session switching
+      if (activeSessionId !== useGraphStore.getState().activeSessionId) return;
+      
       if (graphRes.ok) {
         const graphData = await graphRes.json();
 

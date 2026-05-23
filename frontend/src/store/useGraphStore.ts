@@ -42,31 +42,9 @@ interface GraphState {
 
 export const useGraphStore = create<GraphState>((set, get) => ({
   // --- INITIAL STATE ---
-  // We put your LLM Architecture data here so the app looks "Full" on load
-  nodes: [
-    { id: '1', type: 'entityNode', position: { x: 250, y: 50 }, data: { label: 'Large Language Model', category: 'Concept' } },
-    { id: '2', type: 'entityNode', position: { x: 100, y: 200 }, data: { label: 'Transformer Architecture', category: 'Technology' } },
-    { id: '3', type: 'entityNode', position: { x: 400, y: 200 }, data: { label: 'Self-Attention Mechanism', category: 'Algorithm' } },
-    { id: '4', type: 'entityNode', position: { x: 100, y: 350 }, data: { label: 'Google Brain', category: 'Organization' } },
-    { id: '5', type: 'entityNode', position: { x: 250, y: 350 }, data: { label: 'Attention is All You Need', category: 'Publication' } }
-  ] as AxiomNode[],
-
-  edges: [
-    { id: 'e1-2', source: '2', target: '1', label: 'FOUNDATIONAL_TO', animated: true },
-    { id: 'e2-3', source: '2', target: '3', label: 'UTILIZES', animated: true },
-    { id: 'e4-2', source: '4', target: '2', label: 'DEVELOPED', animated: false },
-    { id: 'e4-5', source: '4', target: '5', label: 'PUBLISHED', animated: false },
-    { id: 'e5-2', source: '5', target: '2', label: 'INTRODUCED', animated: true }
-  ] as AxiomEdge[],
-
-  messages: [
-    {
-      id: '1',
-      role: 'assistant',
-      content: "Hello! I'm Graphenautic, your Intelligent Research Architect. I've pre-loaded a Knowledge Graph about LLM Architecture. You can upload your own documents to expand it.",
-      timestamp: Date.now(),
-    }
-  ],
+  nodes: [] as AxiomNode[],
+  edges: [] as AxiomEdge[],
+  messages: [],
   activeSessionId: '',
   setActiveSessionId: (activeSessionId) => set({ activeSessionId }),
   documents: [],

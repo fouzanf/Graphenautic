@@ -10,20 +10,7 @@ import { useGraphStore } from '@/store/useGraphStore';
 import { v4 as uuidv4 } from 'uuid';
 import { useSession } from 'next-auth/react';
 
-const DEFAULT_NODES = [
-  { id: '1', type: 'entityNode', position: { x: 250, y: 50 }, data: { label: 'Large Language Model', category: 'Concept' } },
-  { id: '2', type: 'entityNode', position: { x: 100, y: 200 }, data: { label: 'Transformer Architecture', category: 'Technology' } },
-  { id: '3', type: 'entityNode', position: { x: 400, y: 200 }, data: { label: 'Self-Attention Mechanism', category: 'Algorithm' } },
-  { id: '4', type: 'entityNode', position: { x: 100, y: 350 }, data: { label: 'Google Brain', category: 'Organization' } },
-  { id: '5', type: 'entityNode', position: { x: 250, y: 350 }, data: { label: 'Attention is All You Need', category: 'Publication' } },
-];
-const DEFAULT_EDGES = [
-  { id: 'e1-2', source: '2', target: '1', label: 'FOUNDATIONAL_TO', animated: true },
-  { id: 'e2-3', source: '2', target: '3', label: 'UTILIZES', animated: true },
-  { id: 'e4-2', source: '4', target: '2', label: 'DEVELOPED', animated: false },
-  { id: 'e4-5', source: '4', target: '5', label: 'PUBLISHED', animated: false },
-  { id: 'e5-2', source: '5', target: '2', label: 'INTRODUCED', animated: true },
-];
+// No default graph nodes/edges; canvas starts completely clean
 import { Menu, MessageSquare, ChevronDown, Plus, Check, History, X } from 'lucide-react';
 
 interface SessionObject {
@@ -55,9 +42,27 @@ export default function GraphWorkspacePage() {
     const loadSessions = async () => {
       setError(null);
 
-      // ✅ Always reset to hardcoded default first
-      setNodes(DEFAULT_NODES as any);
-      setEdges(DEFAULT_EDGES as any);
+      // 1. Generate a new empty session on every load (ChatGPT style)
+      const initialId = uuidv4();
+      const initialSession: SessionObject = {
+        id: initialId,
+        name: `Session - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`,
+        createdAt: Date.now()
+      };
+
+      // 2. Set this new session as active and clear all state
+      setActiveSessionId(initialId);
+      setNodes([]);
+      setEdges([]);
+      setDocuments([]);
+      setMessages([
+        {
+          id: uuidv4(),
+          role: 'assistant',
+          content: "Canvas initialized. Drop a PDF to begin.",
+          timestamp: Date.now(),
+        }
+      ]);
 
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -74,25 +79,11 @@ export default function GraphWorkspacePage() {
             const mapped: SessionObject[] = data.sessions.map((sid: string, idx: number) => ({
               id: sid,
               name: `Session - ${sid.slice(0, 8)}`,
-              createdAt: Date.now() - idx * 60000
+              createdAt: Date.now() - (idx + 1) * 60000
             }));
-            setSessionsList(mapped);
-            setActiveSessionId(mapped[0].id);
-
-            // ✅ Fetch this user's actual graph for their latest session
-            const graphRes = await fetch(
-              `${apiUrl}/graph?session_id=${mapped[0].id}&user_id=${encodeURIComponent(userEmail)}`,
-              { cache: 'no-store' }
-            );
-            if (graphRes.ok) {
-              const graphData = await graphRes.json();
-              // ✅ Only overwrite default if real data exists
-              if (graphData.nodes && graphData.nodes.length > 0) {
-                setNodes(graphData.nodes);
-                setEdges(graphData.edges ?? []);
-              }
-              // else: keep the hardcoded default — do nothing
-            }
+            
+            // 3. Combine fresh session with fetched history, keep new session active
+            setSessionsList([initialSession, ...mapped]);
             return;
           }
         } else {
@@ -103,27 +94,19 @@ export default function GraphWorkspacePage() {
         setError('Backend server unreachable. Please check connection.');
       }
 
-      // New user — no sessions in DB, create a local default session
-      const initialId = uuidv4();
-      const initialSession: SessionObject = {
-        id: initialId,
-        name: `Session - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`,
-        createdAt: Date.now()
-      };
-      setActiveSessionId(initialId);
+      // 4. If no history or error, just set the initial session
       setSessionsList([initialSession]);
-      // Hardcoded default already set at top — nothing more needed
     };
 
     loadSessions();
-  }, [session?.user?.email, setActiveSessionId, setNodes, setEdges]); // ✅ Re-runs on account switch
+  }, [session?.user?.email, setActiveSessionId, setNodes, setEdges, setDocuments]); // ✅ Re-runs on account switch
 
   const handleSwitchSession = async (sessionId: string) => {
     setActiveSessionId(sessionId);
 
-    // Reset to default first
-    setNodes(DEFAULT_NODES as any);
-    setEdges(DEFAULT_EDGES as any);
+    // Reset state before loading new session
+    setNodes([]);
+    setEdges([]);
     setDocuments([]);
     setMessages([{
       id: uuidv4(),

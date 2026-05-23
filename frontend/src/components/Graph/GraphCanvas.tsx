@@ -26,7 +26,7 @@ const GraphTools = ({ onToggleLabels, onExport, onLayout }: { onToggleLabels: ()
   const [showExport, setShowExport] = React.useState(false);
 
   return (
-    <div className="flex flex-row items-center gap-1 bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] pointer-events-auto">
+    <div className="flex flex-row items-center gap-1 bg-[#050b1e]/90 backdrop-blur-2xl border border-blue-500/40 p-2 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] pointer-events-auto relative z-[60]">
       <button onClick={() => zoomIn()} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Zoom In"><ZoomIn className="w-4 h-4" /></button>
       <button onClick={() => zoomOut()} className="p-2 text-slate-400 hover:text-cyan-400 hover:bg-blue-500/10 rounded-xl transition-all" title="Zoom Out"><ZoomOut className="w-4 h-4" /></button>
       <div className="h-5 w-px bg-slate-800" />

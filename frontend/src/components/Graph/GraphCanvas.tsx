@@ -9,7 +9,9 @@ import ReactFlow, {
   SelectionMode,
   MarkerType,
   useReactFlow,
-  ReactFlowProvider
+  ReactFlowProvider,
+  getNodesBounds,
+  getViewportForBounds
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Search, ZoomIn, ZoomOut, Maximize, RotateCcw, Type, Download, Share, FileJson, FileText, ChevronRight, Sparkles, Activity } from 'lucide-react';
@@ -20,6 +22,7 @@ import { CustomNode } from './CustomNode';
 import { CustomEdge } from './CustomEdge';
 import { cn } from '@/lib/utils';
 import dagre from 'dagre';
+import { toPng } from 'html-to-image';
 
 const GraphTools = ({ onToggleLabels, onExport, onLayout }: { onToggleLabels: () => void, onExport: (type: string) => void, onLayout: () => void }) => {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -67,7 +70,7 @@ const GraphCanvasContent = () => {
     setNodes
   } = useGraphStore();
 
-  const { fitView } = useReactFlow();
+  const { fitView, getNodes } = useReactFlow();
 
   React.useEffect(() => {
     if (focusedNodeId) {
@@ -92,7 +95,46 @@ const GraphCanvasContent = () => {
       document.body.appendChild(link);
       link.click();
     } else if (type === 'png') {
-      alert('PNG export requires html-to-image library. JSON & CSV exports are fully functional.');
+      const nodes = getNodes();
+      if (nodes.length === 0) return;
+      const nodesBounds = getNodesBounds(nodes);
+      
+      const imageWidth = nodesBounds.width + 400; // padding
+      const imageHeight = nodesBounds.height + 400; // padding
+
+      const viewport = getViewportForBounds(
+        nodesBounds,
+        imageWidth,
+        imageHeight,
+        0.1,
+        2,
+        0.1
+      );
+
+      const viewportElement = document.querySelector('.react-flow__viewport') as HTMLElement;
+      if (viewportElement) {
+        toPng(viewportElement, {
+          backgroundColor: '#020512',
+          width: imageWidth,
+          height: imageHeight,
+          style: {
+            width: `${imageWidth}px`,
+            height: `${imageHeight}px`,
+            transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          },
+          pixelRatio: 2
+        })
+          .then((dataUrl) => {
+            const link = document.createElement('a');
+            link.download = 'graphenautic_graph.png';
+            link.href = dataUrl;
+            link.click();
+          })
+          .catch((err) => {
+            console.error('Failed to export PNG', err);
+            alert('Failed to export PNG');
+          });
+      }
     }
   };
 

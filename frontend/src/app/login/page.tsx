@@ -9,6 +9,17 @@ import { signIn } from 'next-auth/react';
 export default function LoginPage() {
   const router = useRouter();
   const [loadingState, setLoadingState] = useState<'idle' | 'oauth' | 'verifying' | 'success'>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get('error');
+      if (err) {
+        setError(err);
+      }
+    }
+  }, []);
   
   // 3D Tilt calculation
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -138,6 +149,40 @@ export default function LoginPage() {
                 Seamlessly authenticate with your enterprise Google Workspace or personal Google Account.
               </p>
             </div>
+
+            {/* Error Alert Box */}
+            {error && (
+              <div className="mb-6 p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-left text-xs text-red-200">
+                <div className="flex items-center gap-2 font-bold mb-1.5 text-red-400">
+                  <Shield className="w-4 h-4 shrink-0" />
+                  <span>Authentication Failed ({error})</span>
+                </div>
+                <p className="leading-relaxed mb-3 text-slate-300">
+                  {error === 'OAuthCallback' && (
+                    "The Google authentication callback failed. This typically indicates that your GOOGLE_CLIENT_SECRET in .env.local is incorrect/expired, your local system clock is out of sync (very common on WSL2), or your NEXTAUTH_URL doesn't match the address bar."
+                  )}
+                  {error === 'OAuthSignin' && (
+                    "Could not initiate Google sign-in. Verify that your GOOGLE_CLIENT_ID is valid and check your network connection."
+                  )}
+                  {error === 'Callback' && (
+                    "The callback URL returned an error. Check your backend console logs for more information."
+                  )}
+                  {error !== 'OAuthCallback' && error !== 'OAuthSignin' && error !== 'Callback' && (
+                    "An unexpected error occurred during auth. Check the server console logs for detailed debugging info."
+                  )}
+                </p>
+                <div className="pt-3 border-t border-red-500/20 flex flex-col gap-1 font-mono text-[10px] text-red-400/80">
+                  <div className="font-bold uppercase tracking-wider text-slate-400 mb-1">Troubleshooting Steps:</div>
+                  <div>1. Verify GOOGLE_CLIENT_ID / SECRET in <code className="text-slate-200 bg-white/5 px-1 py-0.5 rounded">.env.local</code></div>
+                  <div>2. Access the site on the EXACT address in <code className="text-slate-200 bg-white/5 px-1 py-0.5 rounded">NEXTAUTH_URL</code></div>
+                  <div>3. Check if your system time matches standard internet time</div>
+                  <div>4. Confirm Google Cloud Console Redirect URI matches:</div>
+                  <div className="bg-black/40 p-2 rounded mt-1 select-all break-all text-blue-300 font-mono">
+                    http://localhost:3000/api/auth/callback/google
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Google Authentication Button Box */}
             <div className="py-4">

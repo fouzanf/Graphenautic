@@ -15,6 +15,7 @@ Databases: Neo4j Aura DB (Graph Database), Pinecone (Vector Database for Semanti
 AI Engine: Google Gemini API (1.5 Pro / 2.5 Flash).
 
 ✨ Key Features
+
 Interactive Graph Workspace: A dynamic canvas powered by React Flow to pan, zoom, filter, and inspect automatically generated node-and-edge relation maps.
 
 Hybrid RAG Architecture: Fuses vector-based semantic search (Pinecone) with structured relational graph queries (Neo4j) to eliminate hallucinations and deliver hyper-accurate context.
@@ -26,6 +27,7 @@ Workspace Session Isolation: Clean space on initialization with history tracking
 Neural Copilot: An integrated sidebar chat that queries your specific hybrid knowledge base for syntheses, trend analysis, and summaries.
 
 🧠 Engineering Architecture & Wins
+
 Graph Multi-Tenant Isolation: Defeated a data-leakage issue where Neo4j globally merged identical entity nodes across separate user uploads. Enforced absolute session boundaries by dynamically mapping and indexing strict session_id properties across all Cypher search and insertion pipelines.
 
 State Hydration & Caching Triage: Fixed a global state caching bug where graph elements from older sessions would momentarily flicker on the dashboard upon a quick workspace switch. Refactored the UI lifecycle to run explicit state resets (setNodes([]), setEdges([])) during the initial React component mounting phase.

@@ -1,9 +1,11 @@
 🚀 An Intelligent Research Architect that converts unstructured PDFs/text files into interactive, visual Knowledge Graphs using Next.js, FastAPI, Neo4j, Pinecone, and Google Gemini. Features a hybrid RAG architecture and real-time canvas visualization.
 
-What Graphenautic Does
+What Graphenautic Does?
+
 Graphenautic is an Intelligent Research Architect that converts unstructured documents (like dense PDFs and text files) into interactive, visual Knowledge Graphs. Instead of just chatting with a standard AI text box, Graphenautic uses LLMs to extract deep entity-relationship networks, allowing users to map out, navigate, and visually explore how complex data connects in real-time.
 
 🛠️ Tech Stack
+
 Frontend: Next.js (App Router), Zustand (State Management), React Flow (Graph Visualization), Tailwind CSS & Shadcn UI.
 
 Backend: FastAPI (Python), Uvicorn.
